@@ -1,0 +1,39 @@
+xxs:
+  layers:
+    0:
+      block type: mobilenetv2
+      expansion factor: 2
+      output channels: 16
+      downsampling: False
+    1:
+      block type: mobilenetv2
+      expansion factor: 2
+      output channels: 24
+      downsampling: True
+    2:
+      block type: mobilenetv2
+      expansion factor: 2
+      output channels: 24
+      downsampling: False
+    3:
+      block type: mobilenetv2
+      expansion factor: 2
+      output channels: 24
+      downsampling: False
+    4:
+      block type: mobilenetv2
+      expansion factor: 2
+      output channels: 48
+      downsampling: True
+    5:
+      block type: mobilevit
+      patch width: 2
+      patch height: 2
+      transformer dimension: 64
+      transformer blocks: 2
+      number of heads: 4
+      output channels: 48
+
+
+
+
