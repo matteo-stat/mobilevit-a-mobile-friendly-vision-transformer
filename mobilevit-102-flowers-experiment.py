@@ -31,7 +31,7 @@ labels_weights = {
 }
 
 # load images paths filenames
-image_file_paths = np.array(glob.glob('data/jpg/*.jpg'))
+image_file_paths = np.array(sorted(glob.iglob('data/jpg/*.jpg')))
 
 # split data into training, validation and test sets
 # stratified random sampling can be used to keep the same level of classes imbalance between the sets
@@ -79,12 +79,12 @@ ds_test = (
 )
 
 # build mobilevit model
-model = mvitl.models.build_mobilevit(network_size='xs', input_shape=(256, 256, 3), num_classes=NUM_CLASSES)
+model = mvitl.models.build_mobilevit(network_size='xxs', input_shape=(256, 256, 3), num_classes=NUM_CLASSES)
 model.summary()
 
 # compile model
 model.compile(
-    optimizer=keras.optimizers.Adam(),
+    optimizer=keras.optimizers.AdamW(),
     loss=keras.losses.CategoricalCrossentropy(from_logits=False),
     metrics=[keras.metrics.CategoricalAccuracy()]
 )
@@ -105,7 +105,7 @@ history = model.fit(
             start_from_epoch=5,
         )
     ],
-    # class_weight=labels_weights
+    class_weight=labels_weights
 )
 
 s = 0
