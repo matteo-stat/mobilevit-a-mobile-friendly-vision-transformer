@@ -1,0 +1,185 @@
+xxs:
+  blocks:
+    0:
+      block type: mobilenetv2
+      expansion factor: 2
+      output channels: 16
+      downsampling: False
+    1:
+      block type: mobilenetv2
+      expansion factor: 2
+      output channels: 24
+      downsampling: True
+    2:
+      block type: mobilenetv2
+      expansion factor: 2
+      output channels: 24
+      downsampling: False
+    3:
+      block type: mobilenetv2
+      expansion factor: 2
+      output channels: 24
+      downsampling: False
+    4:
+      block type: mobilenetv2
+      expansion factor: 2
+      output channels: 48
+      downsampling: True
+    5:
+      block type: mobilevit
+      patch width: 2
+      patch height: 2
+      transformer channels: 64
+      transformer blocks: 2
+      number of heads: 4
+      feed forward network units: 128
+    6:
+      block type: mobilenetv2
+      expansion factor: 2
+      output channels: 64
+      downsampling: True
+    7:
+      block type: mobilevit
+      patch width: 2
+      patch height: 2
+      transformer channels: 80
+      transformer blocks: 4
+      number of heads: 4
+      feed forward network units: 160
+    8:
+      block type: mobilenetv2
+      expansion factor: 2
+      output channels: 80
+      downsampling: True    
+    9:
+      block type: mobilevit
+      patch width: 2
+      patch height: 2
+      transformer channels: 96
+      transformer blocks: 3
+      number of heads: 4
+      feed forward network units: 192
+
+xs:
+  blocks:
+    0:
+      block type: mobilenetv2
+      expansion factor: 4
+      output channels: 32
+      downsampling: False
+    1:
+      block type: mobilenetv2
+      expansion factor: 4
+      output channels: 48
+      downsampling: True
+    2:
+      block type: mobilenetv2
+      expansion factor: 4
+      output channels: 48
+      downsampling: False
+    3:
+      block type: mobilenetv2
+      expansion factor: 4
+      output channels: 48
+      downsampling: False
+    4:
+      block type: mobilenetv2
+      expansion factor: 4
+      output channels: 64
+      downsampling: True
+    5:
+      block type: mobilevit
+      patch width: 2
+      patch height: 2
+      transformer channels: 96
+      transformer blocks: 2
+      number of heads: 4
+      feed forward network units: 192
+    6:
+      block type: mobilenetv2
+      expansion factor: 4
+      output channels: 80
+      downsampling: True
+    7:
+      block type: mobilevit
+      patch width: 2
+      patch height: 2
+      transformer channels: 120
+      transformer blocks: 4
+      number of heads: 4
+      feed forward network units: 240
+    8:
+      block type: mobilenetv2
+      expansion factor: 4
+      output channels: 96
+      downsampling: True    
+    9:
+      block type: mobilevit
+      patch width: 2
+      patch height: 2
+      transformer channels: 144
+      transformer blocks: 3
+      number of heads: 4
+      feed forward network units: 288
+
+s:
+  blocks:
+    0:
+      block type: mobilenetv2
+      expansion factor: 4
+      output channels: 32
+      downsampling: False
+    1:
+      block type: mobilenetv2
+      expansion factor: 4
+      output channels: 64
+      downsampling: True
+    2:
+      block type: mobilenetv2
+      expansion factor: 4
+      output channels: 64
+      downsampling: False
+    3:
+      block type: mobilenetv2
+      expansion factor: 4
+      output channels: 64
+      downsampling: False
+    4:
+      block type: mobilenetv2
+      expansion factor: 4
+      output channels: 96
+      downsampling: True
+    5:
+      block type: mobilevit
+      patch width: 2
+      patch height: 2
+      transformer channels: 144
+      transformer blocks: 2
+      number of heads: 4
+      feed forward network units: 288
+    6:
+      block type: mobilenetv2
+      expansion factor: 4
+      output channels: 128
+      downsampling: True
+    7:
+      block type: mobilevit
+      patch width: 2
+      patch height: 2
+      transformer channels: 192
+      transformer blocks: 4
+      number of heads: 4
+      feed forward network units: 384
+    8:
+      block type: mobilenetv2
+      expansion factor: 4
+      output channels: 160
+      downsampling: True    
+    9:
+      block type: mobilevit
+      patch width: 2
+      patch height: 2
+      transformer channels: 240
+      transformer blocks: 3
+      number of heads: 4
+      feed forward network units: 480
