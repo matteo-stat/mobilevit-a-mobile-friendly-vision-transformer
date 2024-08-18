@@ -5,6 +5,7 @@ def mobilenetv2_bottleneck_block(
         expansion_factor: int,
         output_channels: int,
         downsampling: bool,
+        use_l2_regularization: bool,
         block_counter: int,
     ) -> keras.Layer:
     """
@@ -15,6 +16,7 @@ def mobilenetv2_bottleneck_block(
         expansion_factor (int): expansion factor
         output_channels (int): number of output channels
         downsampling (bool): if True will use stride=2 to perform downsampling, otherwise will use stride=1
+        use_l2_regularization (bool): if True apply l2 regularizer, otherwise not
         block_counter (int): a progressive counter for assigning meaningful names to basic layers
 
     Returns:
@@ -27,18 +29,24 @@ def mobilenetv2_bottleneck_block(
     input_channels = layer.shape[-1]
     input_layer = layer
 
+    # l2 regularizer
+    if use_l2_regularization:
+        l2_regularizer = keras.regularizers.L2()
+    else:
+        l2_regularizer = None
+
     # expand channels with pointwise convolution, followed by batch normalization and silu activation function
-    layer = keras.layers.Conv2D(filters=input_channels*expansion_factor, kernel_size=1, use_bias=False, name=f'{name_prefix}-exp-conv')(layer)
+    layer = keras.layers.Conv2D(filters=input_channels*expansion_factor, kernel_size=1, use_bias=False, kernel_regularizer=l2_regularizer, name=f'{name_prefix}-exp-conv')(layer)
     layer = keras.layers.BatchNormalization(name=f'{name_prefix}-exp-bnorm')(layer)
     layer = keras.layers.Activation(activation='silu', name=f'{name_prefix}-exp-silu')(layer)
 
     # process with depthwise convolution, followed by batch normalization and silu activation function
-    layer = keras.layers.DepthwiseConv2D(kernel_size=3, strides=2 if downsampling else 1, padding='same', use_bias=False, name=f'{name_prefix}-conv')(layer)
+    layer = keras.layers.DepthwiseConv2D(kernel_size=3, strides=2 if downsampling else 1, padding='same', use_bias=False, depthwise_regularizer=l2_regularizer, name=f'{name_prefix}-conv')(layer)
     layer = keras.layers.BatchNormalization(name=f'{name_prefix}-bnorm')(layer)
     layer = keras.layers.Activation(activation='silu', name=f'{name_prefix}-silu')(layer)
 
     # project channels with pointwise convolution, followed by batch normalization
-    layer = keras.layers.Conv2D(filters=output_channels, kernel_size=1, use_bias=False, name=f'{name_prefix}-proj-conv')(layer)
+    layer = keras.layers.Conv2D(filters=output_channels, kernel_size=1, use_bias=False, kernel_regularizer=l2_regularizer, name=f'{name_prefix}-proj-conv')(layer)
     layer = keras.layers.BatchNormalization(name=f'{name_prefix}-proj-bnorm')(layer)
 
     # optionally add a residual connection
@@ -55,6 +63,7 @@ def transformer_block(
         dropout_rate: float,
         feed_forward_network_units: int,
         feed_forward_dropout_rate: float,
+        use_l2_regularization: bool,
         name_prefix: str,
     ) -> keras.Layer:
     """
@@ -68,25 +77,32 @@ def transformer_block(
         dropout_rate (float): dropout rate between attention layer and feed forward network
         feed_forward_network_units (int): number of units in the feed forward network
         feed_forward_dropout_rate (float): dropout rate for the feed forward network
+        use_l2_regularization (bool): if True apply l2 regularizer, otherwise not
         name_prefix (str): name prefix for assigning meaningful names to basic layers
 
     Returns:
         keras.Layer: output from transformer block
     """
+    # l2 regularizer
+    if use_l2_regularization:
+        l2_regularizer = keras.regularizers.L2()
+    else:
+        l2_regularizer = None
+
     # multi head attention
     input_layer_mha = layer
     layer = keras.layers.LayerNormalization(name=f'{name_prefix}-mha-lnorm')(layer)
-    layer = keras.layers.MultiHeadAttention(num_heads=number_of_heads, key_dim=transformer_channels//number_of_heads, dropout=attention_dropout_rate, name=f'{name_prefix}-mha')(layer, layer)
+    layer = keras.layers.MultiHeadAttention(num_heads=number_of_heads, key_dim=transformer_channels//number_of_heads, dropout=attention_dropout_rate, kernel_regularizer=l2_regularizer, name=f'{name_prefix}-mha')(layer, layer)
     layer = keras.layers.Dropout(rate=dropout_rate, name=f'{name_prefix}-mha-dropout')(layer)
     layer = keras.layers.Add(name=f'{name_prefix}-mha-add')([layer, input_layer_mha])
 
     # feed forward network
     input_layer_ffn = layer
     layer = keras.layers.LayerNormalization(name=f'{name_prefix}-ffn-lnorm')(layer)
-    layer = keras.layers.Dense(units=feed_forward_network_units, name=f'{name_prefix}-ffn-exp-dense')(layer)
+    layer = keras.layers.Dense(units=feed_forward_network_units, kernel_regularizer=l2_regularizer, name=f'{name_prefix}-ffn-exp-dense')(layer)
     layer = keras.layers.Activation(activation='silu', name=f'{name_prefix}-ffn-exp-silu')(layer)
     layer = keras.layers.Dropout(rate=feed_forward_dropout_rate, name=f'{name_prefix}-ffn-exp-dropout')(layer)
-    layer = keras.layers.Dense(units=transformer_channels, name=f'{name_prefix}-ffn-proj-dense')(layer)
+    layer = keras.layers.Dense(units=transformer_channels, kernel_regularizer=l2_regularizer, name=f'{name_prefix}-ffn-proj-dense')(layer)
     layer = keras.layers.Dropout(rate=dropout_rate, name=f'{name_prefix}-ffn-dropout')(layer)
     layer = keras.layers.Add(name=f'{name_prefix}-ffn-add')([layer, input_layer_ffn])
 
@@ -100,9 +116,10 @@ def mobilevit_block(
         transformer_blocks: int,
         number_of_heads: int,
         feed_forward_network_units: int,
+        use_l2_regularization: bool,
         block_counter: int,
         attention_dropout_rate: float = 0.1,
-        feed_forward_network_dropout_rate: float = 0.0,
+        feed_forward_network_dropout_rate: float = 0.1,
         dropout_rate: float = 0.1,
     ) -> keras.Layer:
     """
@@ -116,9 +133,10 @@ def mobilevit_block(
         transformer_blocks (int): number of transformer blocks
         number_of_heads (int): number of heads for the attention layer
         feed_forward_network_units (int): number of units in the feed forward network
+        use_l2_regularization (bool): if True apply l2 regularizer, otherwise not
         block_counter (int): a progressive counter for assigning meaningful names to basic layers
         attention_dropout_rate (float, optional): dropout rate for the attention layer. Defaults to 0.1.
-        feed_forward_network_dropout_rate (float, optional): dropout rate for the feed forward network. Defaults to 0.0.
+        feed_forward_network_dropout_rate (float, optional): dropout rate for the feed forward network. Defaults to 0.1.
         dropout_rate (float, optional): dropout rate between attention layer and feed forward network. Defaults to 0.1.
 
     Returns:
@@ -132,11 +150,17 @@ def mobilevit_block(
     _, input_width, input_height, input_channels = layer.shape
     input_layer = layer
 
+    # l2 regularizer
+    if use_l2_regularization:
+        l2_regularizer = keras.regularizers.L2()
+    else:
+        l2_regularizer = None    
+
     # local representation
-    layer = keras.layers.Conv2D(filters=input_channels, kernel_size=3, padding='same', use_bias=False, name=f'{name_prefix}-lrep-conv')(layer)
+    layer = keras.layers.Conv2D(filters=input_channels, kernel_size=3, padding='same', use_bias=False, kernel_regularizer=l2_regularizer, name=f'{name_prefix}-lrep-conv')(layer)
     layer = keras.layers.BatchNormalization(name=f'{name_prefix}-lrep-bnorm')(layer)
     layer = keras.layers.Activation(activation='silu', name=f'{name_prefix}-lrep-silu')(layer)
-    layer = keras.layers.Conv2D(filters=transformer_channels, kernel_size=1, use_bias=False, name=f'{name_prefix}-lrep-expand-conv')(layer)
+    layer = keras.layers.Conv2D(filters=transformer_channels, kernel_size=1, use_bias=False, kernel_regularizer=l2_regularizer, name=f'{name_prefix}-lrep-exp-conv')(layer)
 
     # unfold
     patch_area = int(patch_width * patch_height)
@@ -153,6 +177,7 @@ def mobilevit_block(
             dropout_rate=dropout_rate,
             feed_forward_network_units=feed_forward_network_units,
             feed_forward_dropout_rate=feed_forward_network_dropout_rate,
+            use_l2_regularization=use_l2_regularization,
             name_prefix=f'{name_prefix}-t{str(n).zfill(2)}'
         )
 
@@ -160,7 +185,7 @@ def mobilevit_block(
     layer = keras.layers.Reshape(target_shape=(input_width, input_height, transformer_channels), name=f'{name_prefix}-fold')(layer)
 
     # fusion - reduce channels to input channels with pointwise convolution
-    layer = keras.layers.Conv2D(filters=input_channels, kernel_size=1, use_bias=False, name=f'{name_prefix}-fus-proj-conv')(layer)
+    layer = keras.layers.Conv2D(filters=input_channels, kernel_size=1, use_bias=False, kernel_regularizer=l2_regularizer, name=f'{name_prefix}-fus-proj-conv')(layer)
     layer = keras.layers.BatchNormalization(name=f'{name_prefix}-fus-proj-bnorm')(layer)
     layer = keras.layers.Activation(activation='silu', name=f'{name_prefix}-fus-proj-silu')(layer)
 
@@ -168,7 +193,7 @@ def mobilevit_block(
     layer = keras.layers.Concatenate(axis=-1, name=f'{name_prefix}-fus-concat')([layer, input_layer])
     
     # fusion - reduce channels to input channels with standard convolution
-    layer = keras.layers.Conv2D(filters=input_channels, kernel_size=3, padding='same', use_bias=False, name=f'{name_prefix}-fus-conv')(layer)
+    layer = keras.layers.Conv2D(filters=input_channels, kernel_size=3, padding='same', use_bias=False, kernel_regularizer=l2_regularizer, name=f'{name_prefix}-fus-conv')(layer)
     layer = keras.layers.BatchNormalization(name=f'{name_prefix}-fus-bnorm')(layer)
     layer = keras.layers.Activation(activation='silu', name=f'{name_prefix}-fus-silu')(layer)    
 
