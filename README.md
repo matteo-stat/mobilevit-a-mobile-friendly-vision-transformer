@@ -6,7 +6,9 @@ Among all available architectures, mobile networks have always intrigued me the 
 # "Light-weight, General-purpose, and Mobile-friendly Vision Transformer" - MobileViT Network
 Last year, I read the paper ["MobileViT: Light-weight, General-purpose, and Mobile-friendly Vision Transformer"](https://arxiv.org/pdf/2110.02178) and found it to very interesting.
 
-I really wanted to code the network from scratch to have a better understanding, but unfortunately I never found the time to do it! Now I finally found it!
+I really wanted to code the network from scratch to have a better understanding, but unfortunately I never found the time to do it!
+
+Now I finally found it!
 
 ## Transformers vs CNNs
 
