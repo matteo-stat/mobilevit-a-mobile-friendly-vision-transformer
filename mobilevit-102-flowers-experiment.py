@@ -7,6 +7,20 @@ import mobilevitlib as mvitl
 import tensorflow as tf
 import keras
 
+# set gpu memory
+gpus = tf.config.list_physical_devices('GPU')
+if gpus:
+  try:
+    tf.config.experimental.set_memory_growth(gpus[0], True)
+    tf.config.set_logical_device_configuration(
+        gpus[0],
+        [tf.config.LogicalDeviceConfiguration(memory_limit=12000)])
+    logical_gpus = tf.config.list_logical_devices('GPU')
+    print(len(gpus), 'Physical GPUs,', len(logical_gpus), 'Logical GPUs')
+  except RuntimeError as e:
+    # virtual devices must be set before GPUs have been initialized
+    print(e)
+
 # some parameters
 NUM_CLASSES = 102
 SEED = 1993
@@ -38,7 +52,7 @@ image_file_paths = np.array(sorted(glob.iglob('data/jpg/*.jpg')))
 image_file_paths_train, image_file_paths_test, labels_train, labels_test = train_test_split(
     image_file_paths,
     labels,
-    test_size=0.125,
+    test_size=1000,
     random_state=SEED, 
     shuffle=True,
     stratify=labels
@@ -46,7 +60,7 @@ image_file_paths_train, image_file_paths_test, labels_train, labels_test = train
 image_file_paths_train, image_file_paths_val, labels_train, labels_val = train_test_split(
     image_file_paths_train,
     labels_train,
-    test_size=0.125,
+    test_size=689,
     random_state=SEED, 
     shuffle=True,
     stratify=labels_train
@@ -56,7 +70,7 @@ image_file_paths_train, image_file_paths_val, labels_train, labels_val = train_t
 ds_train = (
     tf.data.Dataset.from_tensor_slices((image_file_paths_train, labels_train))
     .shuffle(buffer_size=len(labels_train))
-    .map(mvitl.read.read_and_resize_jpeg_image_encode_label, num_parallel_calls=tf.data.AUTOTUNE)
+    .map(mvitl.processing.encode_image_and_label, num_parallel_calls=tf.data.AUTOTUNE)
     .batch(batch_size=BATCH_SIZE)
     .map(mvitl.processing.data_augmentation, num_parallel_calls=tf.data.AUTOTUNE)
     .prefetch(buffer_size=tf.data.AUTOTUNE)
@@ -64,7 +78,7 @@ ds_train = (
 ds_val = (
     tf.data.Dataset.from_tensor_slices((image_file_paths_val, labels_val))
     .shuffle(buffer_size=len(labels_val))
-    .map(mvitl.read.read_and_resize_jpeg_image_encode_label, num_parallel_calls=tf.data.AUTOTUNE)
+    .map(mvitl.processing.encode_image_and_label, num_parallel_calls=tf.data.AUTOTUNE)
     .batch(batch_size=BATCH_SIZE)
     .map(mvitl.processing.data_augmentation, num_parallel_calls=tf.data.AUTOTUNE)
     .prefetch(buffer_size=tf.data.AUTOTUNE)
@@ -72,7 +86,7 @@ ds_val = (
 ds_test = (
     tf.data.Dataset.from_tensor_slices((image_file_paths_test, labels_test))
     .shuffle(buffer_size=len(labels_test))
-    .map(mvitl.read.read_and_resize_jpeg_image_encode_label, num_parallel_calls=tf.data.AUTOTUNE)
+    .map(mvitl.processing.encode_image_and_label, num_parallel_calls=tf.data.AUTOTUNE)
     .batch(batch_size=BATCH_SIZE)
     .map(mvitl.processing.data_augmentation, num_parallel_calls=tf.data.AUTOTUNE)
     .prefetch(buffer_size=tf.data.AUTOTUNE)
@@ -84,28 +98,30 @@ model.summary()
 
 # compile model
 model.compile(
-    optimizer=keras.optimizers.AdamW(),
-    loss=keras.losses.CategoricalCrossentropy(from_logits=False),
+    optimizer=keras.optimizers.AdamW(learning_rate=1e-4),
+    loss=keras.losses.CategoricalCrossentropy(from_logits=False, label_smoothing=0.1),
     metrics=[keras.metrics.CategoricalAccuracy()]
 )
 
 # fit the model using validation set to assess model performances on test data
 history = model.fit(
     ds_train,
-    epochs=50,
+    epochs=90,
     validation_data=ds_val,
     verbose=1,
     callbacks=[
         keras.callbacks.EarlyStopping(
             monitor='val_loss',
             min_delta=0.01,
-            patience=5,
+            patience=10,
             verbose=1,
             restore_best_weights=True,
-            start_from_epoch=5,
+            start_from_epoch=10,
         )
     ],
     class_weight=labels_weights
 )
 
-s = 0
+# show test results for each label
+# from sklearn.metrics import classification_report
+# print(classification_report(y_test, y_pred))
