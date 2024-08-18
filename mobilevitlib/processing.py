@@ -1,5 +1,35 @@
 import tensorflow as tf
+import random
 from typing import Tuple
+
+def encode_image_and_label(image_file_path: str, label: int, target_resolution: Tuple[int, int] = (256, 256), num_labels: int = 102) -> Tuple[tf.Tensor, tf.Tensor]:
+    """
+    load jpg image resizing or cropping it to a target resolution and one hot encode a label
+
+    Args:
+        image_file_path (str): file path name of the jpeg image to load
+        label (str): label for the image
+        target_resolution (Tuple[int, int]): a tuple containing the target resolution for images (width, height)
+        num_labels (int): total number of labels, needed for one hot encoding the label. Defaults to 102.
+
+    Returns:
+        Tuple[tf.Tensor, tf.Tensor]: image data, label one hot encoded
+    """
+    # load image
+    image = tf.io.read_file(image_file_path)
+    image = tf.image.decode_jpeg(image)
+    image = tf.cast(image, dtype=tf.float32)
+
+    # rescale or randomly crop to target size
+    rescaling_factor = random.uniform(1, 1.25)
+    image = tf.image.resize(image, size=(int(target_resolution[0]*rescaling_factor), int(target_resolution[1]*rescaling_factor)))
+    image = tf.image.random_crop(image, size=(target_resolution[0], target_resolution[1], 3))                            
+
+    # one hot encode label
+    label = tf.one_hot(label, depth=num_labels, dtype=tf.float32)
+
+    return image, label
+
 
 def data_augmentation(images_batch: tf.Tensor, labels_batch: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
     """
