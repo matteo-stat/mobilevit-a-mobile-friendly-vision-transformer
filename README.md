@@ -4,7 +4,9 @@ I believe that one of the most interesting aspects of deep learning is the desig
 Among all available architectures, mobile networks have always intrigued me the most. Designing an effective network architecture and achieving good results is challenging, even for large networks with a high number of parameters. Achieving good results with small networks, especially those intended for deployment on mobile or low-powered devices, is even more difficult. These networks face constraints on size, operation complexity, and typically require high throughput rates. Mobile networks aim to address these issues while still delivering performance close to that of larger networks!
 
 # "Light-weight, General-purpose, and Mobile-friendly Vision Transformer" - MobileViT Network
-Last year, I read the paper ["MobileViT: Light-weight, General-purpose, and Mobile-friendly Vision Transformer"](https://arxiv.org/pdf/2110.02178) and found it to very interesting. I really wanted to code the network from scratch to have a better understanding, but unfortunately I never found the time to do it! Now I finally found it!
+Last year, I read the paper ["MobileViT: Light-weight, General-purpose, and Mobile-friendly Vision Transformer"](https://arxiv.org/pdf/2110.02178) and found it to very interesting.
+
+I really wanted to code the network from scratch to have a better understanding, but unfortunately I never found the time to do it! Now I finally found it!
 
 ## Transformers vs CNNs
 
