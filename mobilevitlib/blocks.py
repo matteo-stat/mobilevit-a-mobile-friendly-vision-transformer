@@ -147,7 +147,7 @@ def mobilevit_block(
     name_prefix = f'block{str(block_counter).zfill(2)}-mvit'
 
     # save input channels and input layer
-    _, input_width, input_height, input_channels = layer.shape
+    _, input_height, input_width, input_channels = layer.shape
     input_layer = layer
 
     # l2 regularizer

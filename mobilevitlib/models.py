@@ -16,7 +16,7 @@ def build_mobilevit(
 
     Args:
         network_size (Literal['xxs', 'xs', 's']): network size can be 'xxs', 'xs' or 's'
-        input_shape (Tuple[int, int, int]): tuple describing network input shape (width, height, channels)
+        input_shape (Tuple[int, int, int]): tuple describing network input shape (height, width, channels)
         num_classes (int): number of classes for the classification head
         rescale_inputs (bool): if True rescale inputs between -1 and 1, otherwise not. Defaults to True.
         use_l2_regularization (bool): if True apply l2 regularizer, otherwise not. Defaults to True.
