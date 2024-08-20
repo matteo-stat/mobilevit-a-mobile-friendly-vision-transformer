@@ -33,7 +33,7 @@ Does this mean that's not possible to design small lightweight transformers base
 
 MobileViT it's an interesting architecture that combines MobileNet-v2 basic building blocks with transformer based building blocks. It's an hybrid architecture which have both advantages of CNNs (learning local represantion) and Transformers (learning global representations). Thanks to the CNNs components MobileViT can be trained with typical and simple data augmentation and training procedures.
 
-## The Downside
+### MobileViT - The Downside
 MobileViT is an interesting network architecture that combines the strengths of both CNNs and Transformers. This enables simpler and more effective training procedures compared to pure Transformers and often results in slightly better performance than most CNNs with a similar number of parameters.
 
 However, one drawback of MobileViT is its throughput rate. While it performs well, it's inevitably slower than similar-sized CNNs, due to expensive multi-head attention block operations. This lower throughput could be a concern when deploying the network on mobile or low-power devices.
